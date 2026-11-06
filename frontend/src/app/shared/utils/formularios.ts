@@ -51,6 +51,12 @@ export function problemaDe(error: unknown): ProblemDetails | null {
   return null;
 }
 
+/** Mensaje para un aviso cuando falla una acción que no pertenece a un formulario. */
+export function mensajeDeFallo(error: unknown): string {
+  const problema = problemaDe(error);
+  return problema?.errors?.[0]?.message ?? problema?.detail ?? 'No se pudo completar la acción.';
+}
+
 /**
  * Lleva los errores de validación del backend a sus campos. Devuelve el mensaje general
  * cuando el error no corresponde a ningún campo, para mostrarlo arriba del formulario.

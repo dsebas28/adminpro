@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 import { authGuard, invitadoGuard, permisoGuard, sesionGuard } from './core/guards/guards';
 
 const authLayout = () => import('./layouts/auth-layout/auth-layout').then((m) => m.AuthLayout);
-const pendiente = () => import('./features/pendiente/pendiente').then((m) => m.Pendiente);
 
 export const routes: Routes = [
   {
@@ -44,31 +43,90 @@ export const routes: Routes = [
       },
       {
         path: 'empleados',
-        title: 'Empleados | AdminPro',
         data: { miga: 'Empleados' },
         canActivate: [permisoGuard('EMPLEADOS_LEER')],
-        loadComponent: pendiente,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            title: 'Empleados | AdminPro',
+            loadComponent: () => import('./features/empleados/empleados-lista').then((m) => m.EmpleadosLista),
+          },
+          {
+            path: 'nuevo',
+            title: 'Nuevo empleado | AdminPro',
+            data: { miga: 'Nuevo' },
+            canActivate: [permisoGuard('EMPLEADOS_ESCRIBIR')],
+            loadComponent: () => import('./features/empleados/empleado-form').then((m) => m.EmpleadoForm),
+          },
+          {
+            path: ':id/editar',
+            title: 'Editar empleado | AdminPro',
+            data: { miga: 'Editar' },
+            canActivate: [permisoGuard('EMPLEADOS_ESCRIBIR')],
+            loadComponent: () => import('./features/empleados/empleado-form').then((m) => m.EmpleadoForm),
+          },
+          {
+            path: ':id',
+            title: 'Empleado | AdminPro',
+            data: { miga: 'Detalle' },
+            loadComponent: () => import('./features/empleados/empleado-detalle').then((m) => m.EmpleadoDetalle),
+          },
+        ],
       },
       {
         path: 'documentos',
-        title: 'Documentos | AdminPro',
         data: { miga: 'Documentos' },
         canActivate: [permisoGuard('DOCUMENTOS_LEER')],
-        loadComponent: pendiente,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            title: 'Documentos | AdminPro',
+            loadComponent: () => import('./features/documentos/documentos-lista').then((m) => m.DocumentosLista),
+          },
+          {
+            path: 'nuevo',
+            title: 'Registrar documento | AdminPro',
+            data: { miga: 'Registrar' },
+            canActivate: [permisoGuard('DOCUMENTOS_ESCRIBIR')],
+            loadComponent: () => import('./features/documentos/documento-form').then((m) => m.DocumentoForm),
+          },
+          {
+            path: ':id/editar',
+            title: 'Editar documento | AdminPro',
+            data: { miga: 'Editar' },
+            canActivate: [permisoGuard('DOCUMENTOS_ESCRIBIR')],
+            loadComponent: () => import('./features/documentos/documento-form').then((m) => m.DocumentoForm),
+          },
+          {
+            path: ':id',
+            title: 'Documento | AdminPro',
+            data: { miga: 'Detalle' },
+            loadComponent: () => import('./features/documentos/documento-detalle').then((m) => m.DocumentoDetalle),
+          },
+        ],
+      },
+      {
+        path: 'catalogos',
+        title: 'Catálogos | AdminPro',
+        data: { miga: 'Catálogos' },
+        canActivate: [permisoGuard('EMPLEADOS_LEER')],
+        loadComponent: () => import('./features/catalogos/catalogos').then((m) => m.Catalogos),
       },
       {
         path: 'usuarios',
         title: 'Usuarios | AdminPro',
         data: { miga: 'Usuarios' },
         canActivate: [permisoGuard('USUARIOS_LEER')],
-        loadComponent: pendiente,
+        loadComponent: () => import('./features/usuarios/usuarios').then((m) => m.Usuarios),
       },
       {
         path: 'auditoria',
         title: 'Auditoría | AdminPro',
         data: { miga: 'Auditoría' },
         canActivate: [permisoGuard('AUDITORIA_LEER')],
-        loadComponent: pendiente,
+        loadComponent: () => import('./features/auditoria/auditoria').then((m) => m.Auditoria),
       },
       {
         path: 'sistema-diseno',

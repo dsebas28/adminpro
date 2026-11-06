@@ -2,6 +2,7 @@ package com.adminpro.dashboard.service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.adminpro.audit.entity.Auditoria;
 import com.adminpro.audit.repository.AuditoriaRepository;
 import com.adminpro.common.PageResponse;
+import com.adminpro.common.RefResponse;
 import com.adminpro.common.Zona;
 import com.adminpro.dashboard.dto.DashboardDtos.ActividadResponse;
 import com.adminpro.dashboard.dto.DashboardDtos.AlertaResponse;
@@ -45,6 +47,7 @@ public class DashboardService {
     private static final int MAX_ALERTAS_POR_TIPO = 10;
     private static final String DOCUMENTO = "DOCUMENTO";
     private static final String EMPLEADO = "EMPLEADO";
+    private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final EmpleadoRepository empleados;
     private final DocumentoRepository documentos;
@@ -123,7 +126,7 @@ public class DashboardService {
         List<AlertaResponse> alertas = new ArrayList<>();
         for (Documento d : documentos.vencidos(hoy, limite)) {
             alertas.add(new AlertaResponse("DOCUMENTO_VENCIDO", "ALTA",
-                    d.getConsecutivo() + " venció el " + d.getFechaVencimiento(), DOCUMENTO, d.getId()));
+                    d.getConsecutivo() + " venció el " + FECHA.format(d.getFechaVencimiento()), DOCUMENTO, d.getId()));
         }
         for (Documento d : documentos.conResponsableInactivo(limite)) {
             alertas.add(new AlertaResponse("RESPONSABLE_INACTIVO", "MEDIA",
@@ -134,7 +137,7 @@ public class DashboardService {
         documentos.porVencer(hoy, hoy.plusDays(diasPorVencer),
                         PageRequest.of(0, MAX_ALERTAS_POR_TIPO, Sort.by("fechaVencimiento")))
                 .forEach(d -> alertas.add(new AlertaResponse("DOCUMENTO_POR_VENCER", "BAJA",
-                        d.getConsecutivo() + " vence el " + d.getFechaVencimiento(), DOCUMENTO, d.getId())));
+                        d.getConsecutivo() + " vence el " + FECHA.format(d.getFechaVencimiento()), DOCUMENTO, d.getId())));
         return alertas;
     }
 
@@ -145,8 +148,8 @@ public class DashboardService {
 
     private DocumentoListItemResponse aItem(Documento d, LocalDate hoy) {
         return new DocumentoListItemResponse(d.getId(), d.getConsecutivo(), d.getTitulo(),
-                new com.adminpro.common.RefResponse(d.getCategoria().getId(), d.getCategoria().getNombre()),
-                new com.adminpro.common.RefResponse(d.getResponsable().getId(), d.getResponsable().nombreCompleto()),
+                new RefResponse(d.getCategoria().getId(), d.getCategoria().getNombre()),
+                new RefResponse(d.getResponsable().getId(), d.getResponsable().nombreCompleto()),
                 d.getEstado(), d.getFechaDocumento(), d.getFechaVencimiento(), d.estaVencido(hoy), d.isActivo());
     }
 }

@@ -34,6 +34,7 @@ const ENLACES: EnlaceMenu[] = [
   { ruta: '/', texto: 'Inicio', icono: 'inicio', permiso: 'DASHBOARD_LEER' },
   { ruta: '/empleados', texto: 'Empleados', icono: 'personas', permiso: 'EMPLEADOS_LEER' },
   { ruta: '/documentos', texto: 'Documentos', icono: 'documento', permiso: 'DOCUMENTOS_LEER' },
+  { ruta: '/catalogos', texto: 'Catálogos', icono: 'bandeja', permiso: 'EMPLEADOS_LEER' },
   { ruta: '/usuarios', texto: 'Usuarios', icono: 'usuario', permiso: 'USUARIOS_LEER' },
   { ruta: '/auditoria', texto: 'Auditoría', icono: 'historial', permiso: 'AUDITORIA_LEER' },
 ];
@@ -249,7 +250,8 @@ export class MainLayout {
       const segmentos = actual.url.map((s) => s.path).join('/');
       ruta = segmentos ? `${ruta}/${segmentos}` : ruta;
       const texto = actual.data['miga'] as string | undefined;
-      if (texto) {
+      // Una ruta hija vacía hereda los datos de su padre: no se repite la misma miga.
+      if (texto && migas.at(-1)?.texto !== texto) {
         migas.push({ texto, ruta: ruta || '/' });
       }
       actual = actual.firstChild;
