@@ -132,7 +132,7 @@ Verificadas el 2026-11-05 en npm y Maven Central.
 | Componente | Versión | Nota |
 |---|---|---|
 | Java | 21 (LTS) | |
-| Spring Boot | **4.1.2** propuesto | Se aparta de tu "3.x": ver pregunta P1 |
+| Spring Boot | **4.1.2** aprobado | Decidido en la pregunta P1 |
 | PostgreSQL | 16 | |
 | Flyway, Hibernate, Spring Security, JUnit, Mockito | Las que fije el BOM de Spring Boot | No se fijan a mano para evitar incompatibilidades. Flyway queda en 12.4.0 |
 | springdoc-openapi | 3.2.0 | Con 3.5.16 sería la línea 2.8.x |
@@ -144,7 +144,7 @@ Verificadas el 2026-11-05 en npm y Maven Central.
 | Angular | **22.2.6** | Cumple "18+". Las versiones 20 y 21 ya salieron de soporte activo |
 | Tailwind CSS | 4.3.4 | |
 | Chart.js + ng2-charts | 4.6.1 + 11.0.0 | Única librería de gráficos (`D-15`) |
-| Pruebas frontend | **Vitest** propuesto | No está en tu lista: ver pregunta P2 |
+| Pruebas frontend | **Vitest** aprobado | Decidido en la pregunta P2 |
 | Node.js | 22.23.2 | La que tienes instalada cumple lo que pide Angular 22 |
 
 ---

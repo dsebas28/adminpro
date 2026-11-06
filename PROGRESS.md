@@ -1,6 +1,6 @@
 # AdminPro — Progreso
 
-**Fase actual:** 4. Seguridad, entregada y pendiente de tu aprobación.
+**Fase actual:** 5. Frontend base, entregada y pendiente de tu aprobación.
 **Última actualización:** 2026-11-06
 
 ## Estado por fase
@@ -10,8 +10,8 @@
 | 1. Análisis y arquitectura | Aprobada (P3 sigue abierta) |
 | 2. Base de datos | Aprobada y validada en la imagen `postgres:16` |
 | 3. Backend base | Aprobada y validada con Docker |
-| 4. Seguridad | Criterio cumplido, pendiente de aprobación |
-| 5. Frontend base | No iniciada |
+| 4. Seguridad | Aprobada |
+| 5. Frontend base | Criterio cumplido, pendiente de aprobación |
 | 6. Módulos del MVP | No iniciada |
 | 7. CI y documentación | No iniciada |
 | 8+. Iteraciones 2 a 4 | No iniciada |
@@ -56,6 +56,17 @@ La aprobación fue un "siga" sin respuestas puntuales, así que se aplicaron las
 
 En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 
+**Frontend** (`frontend/`, Angular 22, Tailwind 4, Vitest)
+
+| Elemento | Ubicación |
+|---|---|
+| Tokens de diseño, tema claro y oscuro | `src/styles.css` |
+| Sesión, guards, interceptors, tema, avisos | `src/app/core/` |
+| Botón, campo, tabla, paginador, modal, confirmación, avisos, estado, vacío, esqueleto | `src/app/shared/` |
+| Sidebar colapsable, encabezado, breadcrumbs, sello del login | `src/app/layouts/` |
+| Login, cambio de contraseña, catálogo de componentes | `src/app/features/` |
+| Imagen Docker y proxy Nginx | `Dockerfile`, `nginx.conf` |
+
 ## Verificación
 
 **Fase 2.** Ejecutada por Claude con PostgreSQL 16.13 para Windows y Flyway 12.4.0:
@@ -82,7 +93,16 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | Comando del healthcheck de compose | exit 0 con la app arriba, exit 1 abajo |
 | Sintaxis de `docker-compose.yml` | YAML válido, tras corregir un error |
 
-**Fase 4.** `mvn verify` con PostgreSQL 16 real, ejecutado por Claude: **132 pruebas** (29 unitarias y 103 de integración).
+**Fase 5.** Ejecutada por Claude con `docker compose` y Microsoft Edge real:
+
+- `ng test`: 55 pruebas de servicios, guards, interceptors y formularios.
+- 39 comprobaciones en navegador: login contra el backend, tema claro y oscuro, sesión al recargar, logout, menú por rol, acceso denegado, contraseña temporal, diálogos, sidebar, móvil sin scroll horizontal y CSP.
+- Contraste WCAG: 40 pares de colores, mínimo 5,42:1.
+- `X-Forwarded-For` falso a través de Nginx: la petición 11 recibe 429, aunque cada una invente una IP distinta.
+
+El script de navegador vive en un directorio temporal y no está en el repositorio. La renovación del token con pantallas reales aún no se probó en navegador, porque ninguna pantalla consume la API protegida; sí está cubierta con pruebas unitarias.
+
+**Fase 4.** `mvn clean verify` con PostgreSQL 16 real, ejecutado por Claude: **132 pruebas** (29 unitarias y 103 de integración).
 
 - Matriz de permisos: 12 rutas contra los 4 roles y sin sesión, más los permisos exactos de cada rol.
 - Tokens: rotación, reutilización, gracia entre pestañas, logout, token alterado y solo hash en la base de datos.
@@ -111,7 +131,10 @@ Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petici�
 ## Pendientes conocidos
 
 - **Java:** el `PATH` apunta a Java 17; hay que apuntar `JAVA_HOME` a un JDK 21 instalado.
-- **Fase 5:** Nginx debe sobrescribir `X-Forwarded-For` (ver D-31). Hoy un valor falso evade el límite de intentos, aunque el backend solo escucha en `127.0.0.1`.
+- **Fase 6:** reemplazar las pantallas temporales de Empleados, Documentos, Usuarios, Auditoría e Inicio.
+- **Fase 6:** probar en navegador la renovación automática del token.
+- **Fase 7:** versionar pruebas de navegador en el repositorio, si se quieren en CI.
+- **Maven:** usar `mvn clean verify`. Sin `clean`, una compilación incremental dejó clases corruptas una vez.
 - **Fase 6:** agregar a `PermisosIT` cada endpoint nuevo. Hoy cubre autenticación, usuarios, roles y auditoría.
 - **Fase 6:** desactivar un empleado debe desactivar su usuario (supuesto S13).
 - **Iteración 4:** limpiar periódicamente los refresh tokens vencidos.
@@ -139,5 +162,5 @@ Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petici�
 
 ## Próximos pasos
 
-1. Aprobar la Fase 4.
-2. Iniciar la Fase 5: sistema de diseño, layout, login, guards e interceptors.
+1. Aprobar la Fase 5.
+2. Iniciar la Fase 6: empleados, documentos y dashboard.

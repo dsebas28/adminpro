@@ -104,6 +104,24 @@ Si falta `DB_URL`, `DB_USER` o `DB_PASSWORD`, la aplicación no arranca. Es pref
 **D-15. Chart.js con ng2-charts como única librería de gráficos.**
 El MVP y los informes solo necesitan barras, dona y líneas, y Chart.js las cubre con poco peso. ng2-charts 11 declara compatibilidad con Angular 22. ECharts es más potente, pero ese poder no se usa aquí.
 
+**D-32. Identidad visual basada en el sello de radicado.**
+El azul de tinta sobre papel gris frío y la numeradora vienen del trabajo real de una oficina colombiana, no de una plantilla. La única pieza llamativa es el sello del login; el resto de la interfaz es sobria para que dominen los datos.
+
+**D-33. Fuentes empaquetadas con Fontsource, no desde Google Fonts.**
+Se sirven desde el mismo origen, lo que permite una política CSP estricta, evita enviar datos a un tercero y no depende de una red externa.
+
+**D-34. Signals y componentes con detección de cambios OnPush.**
+Angular 22 funciona sin zone.js: los signals dicen exactamente qué actualizar. El estado de la sesión es un signal que guards, menú y directivas leen sin suscripciones manuales.
+
+**D-35. Una sola renovación compartida entre peticiones simultáneas.**
+Si varias peticiones reciben 401 a la vez y cada una renovara, el backend vería un token reutilizado y cerraría la sesión. `AuthService.renovar()` comparte la petición en curso.
+
+**D-36. Elemento `dialog` nativo para los modales.**
+El navegador ya mantiene el foco dentro, cierra con Escape y devuelve el foco al salir. Reimplementarlo sería más código y peor accesibilidad.
+
+**D-37. Política CSP sin scripts en línea.**
+Limita el daño de un ataque XSS. Por eso el tema inicial va en `tema-inicial.js` y se apagó `inlineCritical`, que depende de un manejador `onload` en línea. Los estilos en línea siguen permitidos porque Angular los necesita.
+
 ## Informes (Iteración 4)
 
 **D-18. OpenPDF en lugar de JasperReports.**
