@@ -1,0 +1,151 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/hanken-grotesk/index.css';
+@import '@fontsource-variable/spline-sans-mono/index.css';
+
+/* El tema depende del atributo data-theme, no de la preferencia del sistema, para
+   que el usuario pueda elegirlo. tema-inicial.js lo fija antes del primer pintado. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Sistema de diseño de AdminPro.
+   Concepto: el sello de radicado. Azul de tinta sobre papel gris frío. */
+:root {
+  color-scheme: light;
+  --fondo: #f3f4f7;
+  --superficie: #ffffff;
+  --superficie-2: #eceef3;
+  --linea: #d8dce5;
+  --linea-fuerte: #aeb5c4;
+  --texto: #1b2132;
+  --tenue: #566077;
+
+  --tinta: #2b3a9f;
+  --tinta-hover: #222f85;
+  --sobre-tinta: #ffffff;
+  --tinta-suave: #e6e9fa;
+
+  --barra: #1e2870;
+  --barra-texto: #d9def6;
+  --barra-activo: #2f3b95;
+
+  --exito: #14684a;
+  --exito-suave: #dcf1e8;
+  --aviso: #7f5200;
+  --aviso-suave: #fbeed0;
+  --peligro: #a8232b;
+  --peligro-hover: #8c1c23;
+  --peligro-suave: #fbe3e4;
+  --neutro: #4b5468;
+  --neutro-suave: #e6e8ee;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --fondo: #141827;
+  --superficie: #1c2133;
+  --superficie-2: #252b40;
+  --linea: #30374f;
+  --linea-fuerte: #4c5571;
+  --texto: #e7e9f1;
+  --tenue: #a6aec1;
+
+  --tinta: #aab5ff;
+  --tinta-hover: #c1c9ff;
+  --sobre-tinta: #151a33;
+  --tinta-suave: #2a3058;
+
+  --barra: #171c2e;
+  --barra-texto: #c9cfe6;
+  --barra-activo: #2a3058;
+
+  --exito: #6fd6ab;
+  --exito-suave: #17392f;
+  --aviso: #f0c46c;
+  --aviso-suave: #3b2f14;
+  --peligro: #ff9da2;
+  --peligro-hover: #ffb8bb;
+  --peligro-suave: #431f25;
+  --neutro: #bcc3d4;
+  --neutro-suave: #2c3247;
+}
+
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-texto: var(--texto);
+  --color-tenue: var(--tenue);
+  --color-tinta: var(--tinta);
+  --color-tinta-hover: var(--tinta-hover);
+  --color-sobre-tinta: var(--sobre-tinta);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-barra: var(--barra);
+  --color-barra-texto: var(--barra-texto);
+  --color-barra-activo: var(--barra-activo);
+  --color-exito: var(--exito);
+  --color-exito-suave: var(--exito-suave);
+  --color-aviso: var(--aviso);
+  --color-aviso-suave: var(--aviso-suave);
+  --color-peligro: var(--peligro);
+  --color-peligro-hover: var(--peligro-hover);
+  --color-peligro-suave: var(--peligro-suave);
+  --color-neutro: var(--neutro);
+  --color-neutro-suave: var(--neutro-suave);
+
+  --font-sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
+  --font-numerador: 'Spline Sans Mono Variable', ui-monospace, monospace;
+
+  /* Radios por jerarquía: los controles son pequeños y las superficies grandes no se redondean. */
+  --radius-control: 0.3125rem;
+  --radius-panel: 0.5rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-feature-settings: 'tnum' 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--tinta);
+    outline-offset: 2px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  dialog::backdrop {
+    background: rgb(15 19 35 / 55%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
