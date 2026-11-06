@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # verify corre las pruebas de integración con Testcontainers y exige 70 % de cobertura.
+      - name: Compilar y probar
+        working-directory: backend
+        run: mvn -B -ntp clean verify
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar
+        working-directory: frontend
+        run: npm ci
+      - name: Probar
+        working-directory: frontend
+        run: npx ng test --watch=false
+      - name: Compilar
+        working-directory: frontend
+        run: npm run build
+
+  imagenes:
+    name: Imágenes Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Construir
+        run: |
+          cp .env.example .env
+          docker compose build
