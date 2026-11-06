@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,7 +34,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     ResponseEntity<Object> manejarApi(ApiException ex, WebRequest request) {
-        return responder(ex, ex.tipo(), ex.getMessage(), List.of(), request);
+        return responder(ex, ex.tipo(), ex.getMessage(), ex.errores(), request);
+    }
+
+    /** Sin este método, el rechazo de @PreAuthorize caería en el manejador genérico como un 500. */
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<Object> manejarSinPermiso(AccessDeniedException ex, WebRequest request) {
+        TipoError tipo = TipoError.SIN_PERMISO;
+        return responder(ex, tipo, tipo.detalle(), List.of(), request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

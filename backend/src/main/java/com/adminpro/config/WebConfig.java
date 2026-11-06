@@ -1,25 +1,16 @@
 package com.adminpro.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.adminpro.security.AutorizacionTempranaInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final CorsProperties corsProperties;
-
-    public WebConfig(CorsProperties corsProperties) {
-        this.corsProperties = corsProperties;
-    }
-
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(corsProperties.allowedOrigins().toArray(String[]::new))
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type")
-                .allowCredentials(true) // Necesario para la cookie del refresh token.
-                .maxAge(3600);
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new AutorizacionTempranaInterceptor()).addPathPatterns("/api/**");
     }
 }

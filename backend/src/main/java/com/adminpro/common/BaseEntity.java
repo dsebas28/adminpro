@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 
+import org.hibernate.annotations.OptimisticLock;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -21,6 +22,9 @@ public abstract class BaseEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    // Excluidas del control de versión: son consecuencia de un cambio, no datos de negocio.
+    // Sin esto, tocar un campo excluido (como el último acceso) subiría la versión igual.
+    @OptimisticLock(excluded = true)
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
@@ -29,9 +33,16 @@ public abstract class BaseEntity {
     @Column(name = "created_by", updatable = false)
     private Long createdBy;
 
+    @OptimisticLock(excluded = true)
     @LastModifiedBy
     @Column(name = "updated_by")
     private Long updatedBy;
+
+    /** Para eventos sin sesión, como un login: el autor no se puede leer del contexto de seguridad. */
+    protected void asignarAutor(Long usuarioId) {
+        this.createdBy = usuarioId;
+        this.updatedBy = usuarioId;
+    }
 
     public Instant getCreatedAt() {
         return createdAt;

@@ -1,23 +1,26 @@
 package com.adminpro.config;
 
-import java.util.Optional;
+import java.time.Clock;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+import com.adminpro.security.UsuarioActual;
+
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorActual")
 public class JpaConfig {
 
-    /**
-     * Sin autenticación todavía no hay usuario que registrar, así que created_by y
-     * updated_by quedan en NULL, igual que en las acciones del sistema. La Fase 4
-     * reemplaza este bean para leer el usuario del contexto de seguridad.
-     */
+    /** Sin usuario autenticado, created_by y updated_by quedan en NULL: es una acción del sistema. */
     @Bean
     AuditorAware<Long> auditorActual() {
-        return Optional::empty;
+        return UsuarioActual::idOpcional;
+    }
+
+    @Bean
+    Clock reloj() {
+        return Clock.systemUTC();
     }
 }
