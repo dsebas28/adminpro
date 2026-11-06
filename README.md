@@ -223,6 +223,33 @@ La lista completa, con su justificación, está en [DECISIONS.md](DECISIONS.md).
 - **Archivos validados por contenido.** La extensión la controla quien sube el archivo. Tika revisa los primeros bytes y, como DOCX y XLSX son archivos ZIP, se inspecciona su estructura interna.
 - **Auditoría protegida en la base de datos.** Un trigger rechaza `UPDATE` y `DELETE`: un registro que la aplicación pueda alterar no prueba nada.
 
+## Cómo se construyó
+
+El proyecto se hizo por fases. Cada una tenía un entregable y un criterio de aceptación, y no se avanzaba a la siguiente sin cumplirlo.
+
+| Fase | Qué se hizo | Cómo se comprobó |
+|---|---|---|
+| **1. Análisis y arquitectura** | Requerimientos, arquitectura, modelo de datos, contrato de API y revisión de la matriz de permisos | Documento aprobado antes de escribir código |
+| **2. Base de datos** | 14 tablas, migraciones Flyway, restricciones y datos de prueba para Colombia | Migraciones en un PostgreSQL vacío, 23 casos inválidos rechazados y prueba de concurrencia del consecutivo |
+| **3. Backend base** | Proyecto Spring Boot, errores uniformes, Swagger y Docker | `docker compose up` con los servicios saludables |
+| **4. Seguridad** | Login, refresh token, roles, permisos, usuarios y auditoría | Pruebas de permisos para los 4 roles y de ataques al flujo de tokens |
+| **5. Frontend base** | Sistema de diseño, layout, login, guards e interceptors | Login real en navegador, en tema claro y oscuro |
+| **6. Módulos del MVP** | Empleados, catálogos, documentos, adjuntos, dashboard, usuarios y auditoría | CRUD de punta a punta en navegador, 292 casos de permisos y cobertura mínima de 70 % |
+| **7. CI y documentación** | GitHub Actions, modo demo, despliegue y este README | Modo demo probado con un límite de 512 MB de memoria |
+
+### Problemas reales que aparecieron
+
+Las pruebas encontraron errores que no se veían a simple vista. Estos fueron los más interesantes:
+
+| Problema | Cómo se detectó | Solución |
+|---|---|---|
+| Un rol sin permiso recibía 400 en vez de 403 | Matriz de permisos | Evaluar `@PreAuthorize` antes de leer el cuerpo de la petición |
+| Un inicio de sesión invalidaba la edición que otra persona tenía abierta | Prueba de integración | Excluir del control de versión los campos que no son datos de negocio |
+| CORS dejó de funcionar sin dar ningún error | Prueba contra los contenedores | Enlazar la configuración de forma explícita y agregar una prueba |
+| Un `X-Forwarded-For` falso evadía el límite de intentos | Prueba manual de ataque | Nginx sobrescribe esa cabecera |
+| Tras un login correcto, la aplicación se quedaba en blanco | Navegador real | Leer los breadcrumbs del estado del router |
+| Una contraseña larga con tildes habría causado un error 500 | Análisis de BCrypt, que admite 72 bytes y no 72 caracteres | Validar en bytes, en el frontend y en el backend |
+
 ## Tecnologías
 
 | Capa | Tecnologías |
