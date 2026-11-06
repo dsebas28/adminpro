@@ -76,6 +76,18 @@ El límite de intentos usa la IP del cliente. Tomcat solo confía en esa cabecer
 
 ## Lógica de negocio
 
+**D-40. Catálogos con una base genérica.**
+Departamentos, cargos y categorías tienen las mismas reglas. `CatalogoService` y `CatalogoController` las escriben una vez, y cada catálogo solo define cómo se crea y cuándo está en uso. El permiso de lectura de cada uno se resuelve con `#root.this.permisoLectura()`.
+
+**D-41. DOCX y XLSX se reconocen leyendo la estructura del ZIP.**
+`tika-core` solo los ve como ZIP, y el módulo completo de parsers agrega decenas de dependencias. Basta con leer los nombres de las entradas, sin descomprimirlas: `[Content_Types].xml` más `word/document.xml` o `xl/workbook.xml`. Un ZIP cualquiera se rechaza.
+
+**D-42. Reactivar a un empleado no reactiva su usuario.**
+Devolverle el acceso a alguien debe ser una decisión explícita de un Administrador, no un efecto secundario.
+
+**D-43. JaCoCo hace fallar la compilación si un servicio baja del 70 %.**
+Así el mínimo de cobertura se cumple solo, en vez de depender de revisarlo a mano. Une las pruebas unitarias y las de integración.
+
 **D-09. Concurrencia optimista con `version`.**
 Evita que dos personas se pisen los cambios sin bloquear filas durante la edición. `@Version` de JPA lo resuelve, y el usuario recibe un 409 con un mensaje claro.
 
@@ -121,6 +133,12 @@ El navegador ya mantiene el foco dentro, cierra con Escape y devuelve el foco al
 
 **D-37. Política CSP sin scripts en línea.**
 Limita el daño de un ataque XSS. Por eso el tema inicial va en `tema-inicial.js` y se apagó `inlineCritical`, que depende de un manejador `onload` en línea. Los estilos en línea siguen permitidos porque Angular los necesita.
+
+**D-38. Clase `Listado<T>` para todos los listados.**
+Paginación, orden, filtros y carga se escriben una sola vez. Usa `switchMap` para cancelar la consulta anterior: si el usuario escribe rápido, una respuesta vieja no pisa a la nueva.
+
+**D-39. Barras de un solo color para los documentos por estado.**
+Es una sola serie en el orden fijo del flujo. Una dona dificulta comparar y pierde ese orden. Las cifras generales van como números, no como gráfico, y el gráfico trae valores directos y una tabla para lectores de pantalla.
 
 ## Informes (Iteración 4)
 

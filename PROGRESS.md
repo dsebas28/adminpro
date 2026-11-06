@@ -1,6 +1,6 @@
 # AdminPro — Progreso
 
-**Fase actual:** 5. Frontend base, entregada y pendiente de tu aprobación.
+**Fase actual:** 6. Módulos del MVP, entregada y pendiente de tu aprobación.
 **Última actualización:** 2026-11-06
 
 ## Estado por fase
@@ -11,8 +11,8 @@
 | 2. Base de datos | Aprobada y validada en la imagen `postgres:16` |
 | 3. Backend base | Aprobada y validada con Docker |
 | 4. Seguridad | Aprobada |
-| 5. Frontend base | Criterio cumplido, pendiente de aprobación |
-| 6. Módulos del MVP | No iniciada |
+| 5. Frontend base | Aprobada |
+| 6. Módulos del MVP | Criterio cumplido, pendiente de aprobación |
 | 7. CI y documentación | No iniciada |
 | 8+. Iteraciones 2 a 4 | No iniciada |
 
@@ -67,6 +67,17 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | Login, cambio de contraseña, catálogo de componentes | `src/app/features/` |
 | Imagen Docker y proxy Nginx | `Dockerfile`, `nginx.conf` |
 
+**Módulos del MVP**
+
+| Módulo | Backend | Frontend |
+|---|---|---|
+| Catálogos | `common/catalogo/`, `empleados/`, `documentos/` | `features/catalogos/` |
+| Empleados | `empleados/` | `features/empleados/` |
+| Documentos, consecutivo y flujo | `documentos/` | `features/documentos/` |
+| Adjuntos | `storage/`, `documentos/service/AdjuntoService` | Detalle del documento |
+| Dashboard | `dashboard/` | `features/dashboard/` |
+| Usuarios y auditoría | Fase 4 | `features/usuarios/`, `features/auditoria/` |
+
 ## Verificación
 
 **Fase 2.** Ejecutada por Claude con PostgreSQL 16.13 para Windows y Flyway 12.4.0:
@@ -93,6 +104,15 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | Comando del healthcheck de compose | exit 0 con la app arriba, exit 1 abajo |
 | Sintaxis de `docker-compose.yml` | YAML válido, tras corregir un error |
 
+**Fase 6.** Ejecutada por Claude con Docker y Microsoft Edge real:
+
+- `mvn clean verify`: **427 pruebas** (40 unitarias y 387 de integración), con 292 casos en la matriz de permisos.
+- Cobertura de servicios: entre 86 % y 100 %. JaCoCo rompe la compilación por debajo de 70 %.
+- `ng test`: 61 pruebas.
+- 36 comprobaciones de punta a punta: CRUD de empleados y catálogos, flujo de documentos entre dos usuarios, adjuntos, renovación del token, permisos por rol y móvil. Las 39 de la Fase 5 siguen pasando.
+- Consecutivo con 24 peticiones simultáneas: sin duplicados ni huecos.
+- Subida real por Nginx: 10 MB exactos entran; 10,6 MB y 12 MB responden 413 en Problem Details.
+
 **Fase 5.** Ejecutada por Claude con `docker compose` y Microsoft Edge real:
 
 - `ng test`: 55 pruebas de servicios, guards, interceptors y formularios.
@@ -100,7 +120,7 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 - Contraste WCAG: 40 pares de colores, mínimo 5,42:1.
 - `X-Forwarded-For` falso a través de Nginx: la petición 11 recibe 429, aunque cada una invente una IP distinta.
 
-El script de navegador vive en un directorio temporal y no está en el repositorio. La renovación del token con pantallas reales aún no se probó en navegador, porque ninguna pantalla consume la API protegida; sí está cubierta con pruebas unitarias.
+Los scripts de navegador viven en un directorio temporal y no están en el repositorio.
 
 **Fase 4.** `mvn clean verify` con PostgreSQL 16 real, ejecutado por Claude: **132 pruebas** (29 unitarias y 103 de integración).
 
@@ -131,23 +151,21 @@ Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petici�
 ## Pendientes conocidos
 
 - **Java:** el `PATH` apunta a Java 17; hay que apuntar `JAVA_HOME` a un JDK 21 instalado.
-- **Fase 6:** reemplazar las pantallas temporales de Empleados, Documentos, Usuarios, Auditoría e Inicio.
-- **Fase 6:** probar en navegador la renovación automática del token.
 - **Fase 7:** versionar pruebas de navegador en el repositorio, si se quieren en CI.
 - **Maven:** usar `mvn clean verify`. Sin `clean`, una compilación incremental dejó clases corruptas una vez.
-- **Fase 6:** agregar a `PermisosIT` cada endpoint nuevo. Hoy cubre autenticación, usuarios, roles y auditoría.
-- **Fase 6:** desactivar un empleado debe desactivar su usuario (supuesto S13).
 - **Iteración 4:** limpiar periódicamente los refresh tokens vencidos.
-- **Fase 6:** los adjuntos de prueba son solo metadatos. El backend debe crear archivos de ejemplo al arrancar en `dev` y `demo`, o su descarga dará 404.
-- **Fase 6:** las consultas de búsqueda deben repetir la expresión exacta de los índices (ver D-21).
-- **Fase 6:** la regla "fecha de ingreso no futura" se valida solo en el backend.
-- **Fase 7:** P9, demo y hosting. Agregar JaCoCo para medir el 70 % de cobertura.
+- **Fase 7:** P9, demo y hosting.
+- **Selects de empleados:** cargan hasta 100 activos, el máximo de la API. Con más empleados harían falta búsqueda dentro del campo.
 
 ## Cambios al contrato
 
 - Se agregó el código 405 a la tabla de respuestas. Ningún endpoint ni DTO cambió.
 - `/auth/refresh` se documenta como paso siguiente a `/auth/cambiar-password`.
 - `/actuator/env` y otras rutas no públicas responden 401 sin sesión, no 404.
+- `EmpleadoResponse` incluye `version`, y `departamento` y `cargo` como referencias en lugar de sus ids.
+- `ActividadResponse` incluye `entidadId`.
+- 403 con código `SEPARACION_FUNCIONES` cuando quien creó un documento intenta aprobarlo.
+- Pantalla nueva `/catalogos`, sin cambios en la API.
 
 ## Entorno verificado (2026-11-06)
 
@@ -162,5 +180,5 @@ Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petici�
 
 ## Próximos pasos
 
-1. Aprobar la Fase 5.
-2. Iniciar la Fase 6: empleados, documentos y dashboard.
+1. Aprobar la Fase 6.
+2. Iniciar la Fase 7: GitHub Actions, README y despliegue del demo.
