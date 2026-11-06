@@ -1,4 +1,6 @@
 # Uso: copiar .env.example a .env y ejecutar "docker compose up --build".
+name: adminpro
+
 services:
   db:
     image: postgres:16

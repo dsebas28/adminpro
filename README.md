@@ -163,9 +163,59 @@ flowchart LR
 - **El access token vive en memoria** y el refresh token en una cookie `HttpOnly`: un ataque XSS no puede leerlos para usarlos después.
 - **`StorageService` es una interfaz**, así que pasar de un volumen Docker a S3 solo requiere otra implementación.
 
-## Modelo de datos
+## Base de datos
 
-14 tablas normalizadas, con migraciones Flyway. El diagrama completo y la descripción de cada tabla están en el [documento de arquitectura](docs/fase-1-analisis-y-arquitectura.md#4-modelo-de-datos-del-mvp).
+PostgreSQL 16 con 14 tablas normalizadas y migraciones versionadas con Flyway. Las reglas importantes no dependen solo del código: también están en la base de datos, así que un error de la aplicación no puede guardar datos inválidos. La descripción de cada tabla está en el [documento de arquitectura](docs/fase-1-analisis-y-arquitectura.md#4-modelo-de-datos-del-mvp).
+
+Todas las imágenes de tablas y consultas son la salida real de `psql` sobre el proyecto en ejecución.
+
+### Diagramas entidad-relación
+
+**Seguridad.** Cada usuario tiene un rol, y cada rol reúne sus permisos. Los refresh tokens se guardan solo como hash, y `auditoria` registra los cambios de todo el sistema.
+
+![Diagrama de seguridad](docs/database/images/er-seguridad.png)
+
+**Organización.** Cada empleado pertenece a un departamento y tiene un cargo. Un empleado puede tener usuario o no: no todas las personas de la empresa entran al sistema.
+
+![Diagrama de organización](docs/database/images/er-organizacion.png)
+
+**Documentos.** El documento se relaciona con su categoría y su responsable, y guarda adjuntos e historial. `secuencias_consecutivo` no tiene relaciones a propósito: es el contador que asigna los números sin duplicados.
+
+![Diagrama de documentos](docs/database/images/er-documentos.png)
+
+### Tablas y migraciones
+
+Las 14 tablas con sus columnas, filas, índices y claves foráneas. A la derecha, las 6 migraciones del esquema y la migración repetible con los datos de prueba, que solo corre en los perfiles `dev` y `demo`.
+
+| Tablas | Migraciones Flyway |
+|---|---|
+| ![Tablas](docs/database/images/tablas.png) | ![Migraciones](docs/database/images/migraciones.png) |
+
+### Restricciones e índices
+
+Las reglas de formato, unicidad y fechas viven en restricciones `CHECK`, `UNIQUE` y claves foráneas. Para buscar sin tildes, `f_normalizar` quita acentos y mayúsculas, y un índice de trigramas permite encontrar texto en cualquier parte del campo.
+
+| Restricciones | Índices de búsqueda |
+|---|---|
+| ![Restricciones](docs/database/images/restricciones.png) | ![Índices](docs/database/images/indices.png) |
+
+### Las restricciones en acción
+
+Estos intentos se hicieron directamente en la base de datos, sin pasar por la aplicación, y todos fueron rechazados: una cédula con letras, un correo repetido con otras mayúsculas, un estado que no existe y dos intentos de alterar registros de solo inserción.
+
+![Datos inválidos rechazados](docs/database/images/rechazos.png)
+
+### Datos de prueba
+
+Empleados, documentos y consecutivos ficticios pero realistas para Colombia. Hay documentos de 2025 y 2026 para mostrar el reinicio anual del consecutivo, y la auditoría guarda quién hizo cada cambio y el valor nuevo.
+
+| Empleados | Documentos y consecutivos |
+|---|---|
+| ![Empleados](docs/database/images/datos-empleados.png) | ![Documentos](docs/database/images/datos-documentos.png) |
+
+![Auditoría](docs/database/images/auditoria.png)
+
+### Relaciones
 
 ```mermaid
 erDiagram
@@ -211,6 +261,42 @@ L es leer, E es crear o editar y D es desactivar.
 | Documentos | L E D y aprobar | L E y aprobar | L E | L |
 | Usuarios y roles | L E D | No | No | No |
 | Auditoría | L | L | No | No |
+
+## Docker
+
+Todo el sistema levanta con un solo comando. Cada servicio corre en su propio contenedor, y las imágenes se construyen en dos etapas: una compila y la otra contiene solo lo necesario para ejecutar. Las imágenes son la salida real de los comandos sobre el proyecto en ejecución.
+
+| Servicio | Imagen | Función |
+|---|---|---|
+| `frontend` | Nginx sin privilegios de root | Sirve Angular y reenvía `/api` al backend |
+| `backend` | Java 21 (JRE) | API REST; aplica las migraciones al arrancar |
+| `db` | PostgreSQL 16 | Base de datos |
+
+Los servicios arrancan en orden: el backend espera a que la base de datos esté lista, y el frontend espera al backend. Los puertos solo se abren en `127.0.0.1`, no hacia la red.
+
+![Contenedores](docs/docker/images/contenedores.png)
+
+| Imágenes construidas | Consumo de recursos |
+|---|---|
+| ![Imágenes](docs/docker/images/imagenes.png) | ![Recursos](docs/docker/images/recursos.png) |
+
+Los datos y los adjuntos viven en volúmenes, así que sobreviven aunque se recreen los contenedores. Los servicios se comunican por una red interna propia.
+
+![Volúmenes y red](docs/docker/images/volumenes-red.png)
+
+Al arrancar, el backend valida y aplica las migraciones antes de aceptar peticiones.
+
+![Arranque del backend](docs/docker/images/arranque.png)
+
+El backend no corre como root, reporta su salud para que Docker la vigile, y Nginx agrega cabeceras de seguridad como la política CSP.
+
+![Salud y seguridad](docs/docker/images/seguridad.png)
+
+## Integración continua
+
+Cada push ejecuta tres trabajos en GitHub Actions: compila y prueba el backend con un PostgreSQL real, prueba y compila el frontend, y construye las imágenes Docker. Si una prueba falla o la cobertura baja del 70 %, el pipeline falla.
+
+![Ejecución en GitHub Actions](docs/docker/images/github-actions.png)
 
 ## Decisiones técnicas destacadas
 
