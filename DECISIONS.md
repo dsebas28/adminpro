@@ -145,6 +145,14 @@ Es una sola serie en el orden fijo del flujo. Una dona dificulta comparar y pier
 **D-18. OpenPDF en lugar de JasperReports.**
 Los informes son tablas con encabezado y totales. OpenPDF se programa directo en Java, sin plantillas ni diseñador externo, y es más liviano.
 
+## Demo público
+
+**D-44. Modo demo que protege las cuentas y restaura los datos.**
+Un demo con credenciales publicadas permite a cualquiera cambiar una contraseña y bloquear a los demás. En el perfil `demo`, las 4 cuentas no se pueden modificar y los datos se restauran cada noche y en cada arranque. Lo segundo cubre los planes gratuitos, donde el servidor duerme y no llega a la hora programada.
+
+**D-45. Demo en Render y Neon, con frontend y API bajo un mismo dominio.**
+Es gratuito y la base de Neon no expira, a diferencia de la gratuita de Render. Un sitio estático reenvía `/api` al backend para conservar el mismo origen y la cookie `SameSite=Strict`. El backend usó unos 385 MB en una prueba con límite de 512 MB.
+
 ## Sin Python
 
 **D-19. No se incluye Python.**

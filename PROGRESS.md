@@ -1,6 +1,6 @@
 # AdminPro — Progreso
 
-**Fase actual:** 6. Módulos del MVP, entregada y pendiente de tu aprobación.
+**Fase actual:** 7. CI y documentación, en curso: falta publicar el repositorio y desplegar el demo.
 **Última actualización:** 2026-11-06
 
 ## Estado por fase
@@ -12,8 +12,8 @@
 | 3. Backend base | Aprobada y validada con Docker |
 | 4. Seguridad | Aprobada |
 | 5. Frontend base | Aprobada |
-| 6. Módulos del MVP | Criterio cumplido, pendiente de aprobación |
-| 7. CI y documentación | No iniciada |
+| 6. Módulos del MVP | Aprobada |
+| 7. CI y documentación | README, CI y modo demo listos. Faltan el primer pipeline y el demo en vivo |
 | 8+. Iteraciones 2 a 4 | No iniciada |
 
 ## Decisiones tomadas al aprobar la Fase 1
@@ -78,6 +78,16 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | Dashboard | `dashboard/` | `features/dashboard/` |
 | Usuarios y auditoría | Fase 4 | `features/usuarios/`, `features/auditoria/` |
 
+**CI y documentación**
+
+| Elemento | Ubicación |
+|---|---|
+| README con 27 capturas | `README.md`, `docs/screenshots/` |
+| Integración continua | `.github/workflows/ci.yml` |
+| Despliegue del demo | `render.yaml` |
+| Modo demo | `security/ModoDemo`, `demo/DemoReset` |
+| Licencia MIT | `LICENSE` |
+
 ## Verificación
 
 **Fase 2.** Ejecutada por Claude con PostgreSQL 16.13 para Windows y Flyway 12.4.0:
@@ -103,6 +113,13 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | "TESORERÍA" contra "Tesorería" | Rechazado por duplicado |
 | Comando del healthcheck de compose | exit 0 con la app arriba, exit 1 abajo |
 | Sintaxis de `docker-compose.yml` | YAML válido, tras corregir un error |
+
+**Fase 7.** Ejecutada por Claude:
+
+- `mvn clean verify`: 430 pruebas (43 unitarias y 387 de integración).
+- Modo demo con límite de 512 MB: las 4 cuentas responden 409 al modificarlas, el reset programado devuelve los datos iniciales y el backend usó unos 385 MB.
+
+**Sin probar todavía:** el pipeline en GitHub Actions y el despliegue en Render. Solo se validó la sintaxis de `ci.yml` y `render.yaml`. En particular, falta confirmar que Render reenvía `/api` y conserva las cookies.
 
 **Fase 6.** Ejecutada por Claude con Docker y Microsoft Edge real:
 
@@ -180,5 +197,7 @@ Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petici�
 
 ## Próximos pasos
 
-1. Aprobar la Fase 6.
-2. Iniciar la Fase 7: GitHub Actions, README y despliegue del demo.
+1. Crear el repositorio `adminpro` en GitHub y subir el código.
+2. Confirmar que el pipeline pasa.
+3. Crear cuentas en Neon y Render, y publicar el demo.
+4. Agregar el enlace del demo al README.
