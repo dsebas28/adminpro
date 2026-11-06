@@ -1,0 +1,4 @@
+# Demo público: incluye los datos de prueba y mantiene Swagger disponible.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed

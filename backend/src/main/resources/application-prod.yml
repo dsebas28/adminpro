@@ -1,0 +1,6 @@
+# Producción: sin datos de prueba y sin documentación pública de la API.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

@@ -1,0 +1,8 @@
+# Desarrollo local: incluye los datos de prueba.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+
+logging:
+  level:
+    com.adminpro: DEBUG
