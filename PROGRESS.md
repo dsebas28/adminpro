@@ -1,6 +1,6 @@
 # AdminPro — Progreso
 
-**Fase actual:** 3. Backend base, validada con Docker y pendiente de tu aprobación.
+**Fase actual:** 4. Seguridad, entregada y pendiente de tu aprobación.
 **Última actualización:** 2026-11-06
 
 ## Estado por fase
@@ -9,8 +9,8 @@
 |---|---|
 | 1. Análisis y arquitectura | Aprobada (P3 sigue abierta) |
 | 2. Base de datos | Aprobada y validada en la imagen `postgres:16` |
-| 3. Backend base | Criterio cumplido, pendiente de aprobación |
-| 4. Seguridad | No iniciada |
+| 3. Backend base | Aprobada y validada con Docker |
+| 4. Seguridad | Criterio cumplido, pendiente de aprobación |
 | 5. Frontend base | No iniciada |
 | 6. Módulos del MVP | No iniciada |
 | 7. CI y documentación | No iniciada |
@@ -43,6 +43,15 @@ La aprobación fue un "siga" sin respuestas puntuales, así que se aplicaron las
 | Swagger, CORS y auditoría JPA | `config/` |
 | `BaseEntity` y `PageResponse` | `common/` |
 | Pruebas unitarias e integración | `src/test/` |
+
+**Seguridad** (`backend/src/main/java/com/adminpro/`)
+
+| Elemento | Ubicación |
+|---|---|
+| Login, refresh, logout, perfil y cambio de contraseña | `auth/` |
+| Usuarios, roles y Administrador inicial | `usuarios/` |
+| JWT, filtros, límite de intentos y autorización temprana | `security/` |
+| Registro y consulta de auditoría | `audit/` |
 | Imagen Docker | `Dockerfile` |
 
 En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
@@ -73,7 +82,16 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 | Comando del healthcheck de compose | exit 0 con la app arriba, exit 1 abajo |
 | Sintaxis de `docker-compose.yml` | YAML válido, tras corregir un error |
 
-**Validación con Docker** (2026-11-06, Docker 29.9.2, Compose 5.6.1, PostgreSQL 16.15 en Debian, `en_US.utf8`):
+**Fase 4.** `mvn verify` con PostgreSQL 16 real, ejecutado por Claude: **132 pruebas** (29 unitarias y 103 de integración).
+
+- Matriz de permisos: 12 rutas contra los 4 roles y sin sesión, más los permisos exactos de cada rol.
+- Tokens: rotación, reutilización, gracia entre pestañas, logout, token alterado y solo hash en la base de datos.
+- Login: bloqueo, límite por IP, respuesta idéntica con correo inexistente y contraseñas de más de 72 bytes.
+- Auditoría: quién, antes y después, sin datos sensibles, y se revierte si el cambio falla.
+
+También se probó por HTTP contra los contenedores: cookie `HttpOnly` y `SameSite=Strict`, CORS, límite real de intentos, y `prod` sin datos de prueba con Administrador inicial.
+
+**Validación con Docker, Fase 3** (2026-11-06, Docker 29.9.2, Compose 5.6.1, PostgreSQL 16.15 en Debian, `en_US.utf8`):
 
 | Prueba | Resultado |
 |---|---|
@@ -86,11 +104,17 @@ En la raíz: `docker-compose.yml`, `.env.example` y `.gitignore`.
 
 Se corrigió un choque de puertos: tu PostgreSQL local ya usa el 5433, así que AdminPro expone la base de datos en el **55432**.
 
+## Repositorio
+
+Historial limpio desde el 2026-11-06. Football AI Predictor se retiró a petición del usuario; su respaldo está fuera del repositorio, en `Desktop\respaldo-football-ai-predictor.bundle`. Se puede restaurar con `git clone` sobre ese archivo.
+
 ## Pendientes conocidos
 
-- **P3, sin resolver:** no se ha tocado el `.git`. Contiene Football AI Predictor y puede ser su única copia. No hacer commits hasta decidir.
 - **Java:** el `PATH` apunta a Java 17; hay que apuntar `JAVA_HOME` a un JDK 21 instalado.
-- **Fase 4:** responder 403 ante `AccessDeniedException` (ver D-24) y reemplazar el bean `auditorActual`.
+- **Fase 5:** Nginx debe sobrescribir `X-Forwarded-For` (ver D-31). Hoy un valor falso evade el límite de intentos, aunque el backend solo escucha en `127.0.0.1`.
+- **Fase 6:** agregar a `PermisosIT` cada endpoint nuevo. Hoy cubre autenticación, usuarios, roles y auditoría.
+- **Fase 6:** desactivar un empleado debe desactivar su usuario (supuesto S13).
+- **Iteración 4:** limpiar periódicamente los refresh tokens vencidos.
 - **Fase 6:** los adjuntos de prueba son solo metadatos. El backend debe crear archivos de ejemplo al arrancar en `dev` y `demo`, o su descarga dará 404.
 - **Fase 6:** las consultas de búsqueda deben repetir la expresión exacta de los índices (ver D-21).
 - **Fase 6:** la regla "fecha de ingreso no futura" se valida solo en el backend.
@@ -99,6 +123,8 @@ Se corrigió un choque de puertos: tu PostgreSQL local ya usa el 5433, así que 
 ## Cambios al contrato
 
 - Se agregó el código 405 a la tabla de respuestas. Ningún endpoint ni DTO cambió.
+- `/auth/refresh` se documenta como paso siguiente a `/auth/cambiar-password`.
+- `/actuator/env` y otras rutas no públicas responden 401 sin sesión, no 404.
 
 ## Entorno verificado (2026-11-06)
 
@@ -113,6 +139,5 @@ Se corrigió un choque de puertos: tu PostgreSQL local ya usa el 5433, así que 
 
 ## Próximos pasos
 
-1. Aprobar la Fase 3.
-2. Resolver P3.
-3. Iniciar la Fase 4: login, refresh token, roles, permisos y auditoría.
+1. Aprobar la Fase 4.
+2. Iniciar la Fase 5: sistema de diseño, layout, login, guards e interceptors.

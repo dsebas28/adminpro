@@ -514,7 +514,7 @@ Roles: **A** Administrador, **S** Supervisor, **X** Auxiliar, **C** Consulta.
 | GET | `/auth/me` | Autenticado | Usuario actual y sus permisos | 200 | |
 | POST | `/auth/cambiar-password` | Autenticado | Cambia la contraseña y revoca las demás sesiones | 204 | 400 |
 
-Con `debe_cambiar_password` activo, el backend rechaza con 403 todo lo que no sea `/auth/cambiar-password`, `/auth/logout` y `/auth/me`.
+Con `debe_cambiar_password` activo, el backend rechaza con 403 todo lo que no sea `/auth/cambiar-password`, `/auth/logout` y `/auth/me`. Después de cambiarla, el cliente llama a `/auth/refresh` para obtener un token sin esa restricción.
 
 ### 5.3 Usuarios y roles
 

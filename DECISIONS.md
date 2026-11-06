@@ -56,6 +56,24 @@ Un solo servicio firma y valida, así que no hace falta clave asimétrica. Usar 
 **D-17. Un rol por usuario.**
 El sistema define 4 roles fijos y ningún caso del MVP requiere combinarlos. Una clave foránea simplifica el modelo y las pruebas de la matriz. Pasar a N:M después es una migración acotada.
 
+**D-26. `@PreAuthorize` evaluado antes de leer el cuerpo.**
+Spring resuelve `@Valid` antes de la seguridad de métodos, así que un rol sin permiso recibía 400 con detalles de validación en vez de 403. Un interceptor evalúa la misma anotación antes de leer el cuerpo: la regla sigue en un solo lugar y aplica a todo controlador nuevo.
+
+**D-27. Los fallos de login y la revocación por robo confirman en su propia transacción.**
+Esos cambios deben sobrevivir al 401 que viene después, y una excepción dentro de la transacción los revertiría. Por eso `AuthService` no es transaccional en esos flujos y `RefreshTokenService` devuelve un `Optional` vacío en lugar de lanzar la excepción.
+
+**D-28. Gracia de 10 segundos en la rotación, solo si la familia sigue activa.**
+Dos pestañas pueden renovar a la vez con el mismo token, y sin gracia eso cerraría la sesión como si fuera un robo. Comprobar que la familia siga activa impide usar la gracia después de un logout, sin agregar columnas.
+
+**D-29. Los campos de login y `updated_at`/`updated_by` no suben la `version`.**
+Un login no es una edición: si subiera la versión, invalidaría el formulario que un Administrador tenga abierto. Se excluyen con `@OptimisticLock(excluded = true)`.
+
+**D-30. Límite de BCrypt validado en bytes.**
+BCrypt admite 72 bytes, no 72 caracteres, y una tilde ocupa dos bytes en UTF-8. `PasswordPolicy` lo valida para responder 400 y no 500.
+
+**D-31. `forward-headers-strategy: native` y Nginx sobrescribe `X-Forwarded-For`.**
+El límite de intentos usa la IP del cliente. Tomcat solo confía en esa cabecera si viene de una red interna, pero la red de Docker lo es, así que el proxy debe usar `proxy_set_header X-Forwarded-For $remote_addr` y nunca conservar lo que envió el cliente. El backend no debe quedar expuesto al público sin ese proxy.
+
 ## Lógica de negocio
 
 **D-09. Concurrencia optimista con `version`.**
@@ -75,8 +93,8 @@ La extensión y el `Content-Type` los controla el cliente, mientras que Tika ins
 **D-23. Manejador global que hereda de `ResponseEntityExceptionHandler`.**
 Así los errores propios de Spring MVC (404, 405, JSON mal formado) también salen en Problem Details y en español, no solo las excepciones de negocio. Los errores 500 y de integridad responden un mensaje genérico para no filtrar detalles internos.
 
-**D-24. Spring Security se agrega en la Fase 4, no en la 3.**
-Incluirlo antes bloquearía Swagger y obligaría a escribir una configuración temporal. Al agregarlo, `AccessDeniedException` debe responder 403: el manejador genérico la convertiría en 500.
+**D-24. Spring Security se agregó en la Fase 4, no en la 3.**
+Incluirlo antes habría bloqueado Swagger y obligado a escribir una configuración temporal. `AccessDeniedException` tiene su propio manejador para responder 403: el genérico la convertiría en 500.
 
 **D-25. Variables de conexión sin valor por defecto.**
 Si falta `DB_URL`, `DB_USER` o `DB_PASSWORD`, la aplicación no arranca. Es preferible un fallo inmediato a conectarse por error con una configuración insegura.
