@@ -19,6 +19,7 @@ import com.adminpro.common.Consultas;
 import com.adminpro.common.PageResponse;
 import com.adminpro.exception.ApiException;
 import com.adminpro.exception.TipoError;
+import com.adminpro.security.ModoDemo;
 import com.adminpro.security.PasswordPolicy;
 import com.adminpro.security.UsuarioActual;
 import com.adminpro.usuarios.dto.RestablecerPasswordRequest;
@@ -50,10 +51,11 @@ public class UsuarioService {
     private final RefreshTokenService refreshTokens;
     private final AuditService auditoria;
     private final UsuarioMapper mapper;
+    private final ModoDemo modoDemo;
 
     public UsuarioService(UsuarioRepository usuarios, RolRepository roles, EmpleadoRefRepository empleados,
             PasswordEncoder codificador, RefreshTokenService refreshTokens, AuditService auditoria,
-            UsuarioMapper mapper) {
+            UsuarioMapper mapper, ModoDemo modoDemo) {
         this.usuarios = usuarios;
         this.roles = roles;
         this.empleados = empleados;
@@ -61,6 +63,7 @@ public class UsuarioService {
         this.refreshTokens = refreshTokens;
         this.auditoria = auditoria;
         this.mapper = mapper;
+        this.modoDemo = modoDemo;
     }
 
     public PageResponse<UsuarioResponse> listar(String q, Long rolId, Boolean activo, Pageable paginacion) {
@@ -113,6 +116,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse actualizar(Long id, UsuarioUpdateRequest solicitud) {
         Usuario usuario = buscar(id);
+        modoDemo.protegerCuenta(usuario.getCorreo());
         if (usuario.getVersion() != solicitud.version()) {
             throw ApiException.de(TipoError.VERSION_DESACTUALIZADA);
         }
@@ -134,6 +138,7 @@ public class UsuarioService {
     public void restablecerPassword(Long id, RestablecerPasswordRequest solicitud) {
         PasswordPolicy.validar("passwordTemporal", solicitud.passwordTemporal());
         Usuario usuario = buscar(id);
+        modoDemo.protegerCuenta(usuario.getCorreo());
         usuario.asignarPasswordTemporal(codificador.encode(solicitud.passwordTemporal()));
         refreshTokens.revocarTodas(id);
         auditoria.registrar(ENTIDAD, id, AccionAuditoria.RESTABLECER_PASSWORD, null, null);
@@ -151,6 +156,7 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse desactivar(Long id) {
         Usuario usuario = buscar(id);
+        modoDemo.protegerCuenta(usuario.getCorreo());
         if (id.equals(UsuarioActual.id())) {
             throw ApiException.conflicto("No puedes desactivar tu propio usuario");
         }
@@ -166,6 +172,7 @@ public class UsuarioService {
     @Transactional
     public void desactivarDeEmpleado(Long empleadoId) {
         usuarios.findByEmpleado_Id(empleadoId).filter(Usuario::isActivo).ifPresent(usuario -> {
+            modoDemo.protegerCuenta(usuario.getCorreo());
             if (usuario.getId().equals(UsuarioActual.id())) {
                 throw ApiException.conflicto("No puedes desactivar al empleado vinculado a tu propio usuario");
             }

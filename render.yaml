@@ -1,0 +1,46 @@
+# Demo público en Render (plan gratuito). La base de datos es externa, en Neon, porque el
+# PostgreSQL gratuito de Render expira. Los valores con sync: false se escriben en el panel.
+services:
+  - type: web
+    name: adminpro-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ADJUNTOS_DIR
+        value: /tmp/adjuntos
+
+  - type: web
+    name: adminpro
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist/frontend/browser
+    routes:
+      # El navegador solo ve un dominio: la cookie SameSite=Strict funciona igual que en local.
+      - type: rewrite
+        source: /api/*
+        destination: https://adminpro-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

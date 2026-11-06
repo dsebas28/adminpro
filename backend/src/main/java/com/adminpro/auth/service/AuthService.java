@@ -17,6 +17,7 @@ import com.adminpro.auth.dto.UsuarioActualResponse;
 import com.adminpro.exception.ApiException;
 import com.adminpro.exception.TipoError;
 import com.adminpro.security.JwtService;
+import com.adminpro.security.ModoDemo;
 import com.adminpro.security.PasswordPolicy;
 import com.adminpro.usuarios.entity.Usuario;
 import com.adminpro.usuarios.repository.UsuarioRepository;
@@ -40,10 +41,12 @@ public class AuthService {
     private final IntentosLoginService intentos;
     private final AuditService auditoria;
     private final Clock reloj;
+    private final ModoDemo modoDemo;
     private final String hashFicticio;
 
     public AuthService(UsuarioRepository usuarios, PasswordEncoder codificador, JwtService jwt,
-            RefreshTokenService refreshTokens, IntentosLoginService intentos, AuditService auditoria, Clock reloj) {
+            RefreshTokenService refreshTokens, IntentosLoginService intentos, AuditService auditoria, Clock reloj,
+            ModoDemo modoDemo) {
         this.usuarios = usuarios;
         this.codificador = codificador;
         this.jwt = jwt;
@@ -51,6 +54,7 @@ public class AuthService {
         this.intentos = intentos;
         this.auditoria = auditoria;
         this.reloj = reloj;
+        this.modoDemo = modoDemo;
         this.hashFicticio = codificador.encode(UUID.randomUUID().toString());
     }
 
@@ -100,6 +104,7 @@ public class AuthService {
     public void cambiarPassword(Long usuarioId, CambiarPasswordRequest solicitud, String refreshToken) {
         PasswordPolicy.validar("passwordNueva", solicitud.passwordNueva());
         Usuario usuario = buscar(usuarioId);
+        modoDemo.protegerCuenta(usuario.getCorreo());
         if (!verificar(solicitud.passwordActual(), usuario)) {
             throw ApiException.campo("passwordActual", "La contraseña actual no es correcta");
         }

@@ -2,3 +2,8 @@
 spring:
   flyway:
     locations: classpath:db/migration,classpath:db/seed
+
+adminpro:
+  demo:
+    activo: true
+    reset-cron: ${DEMO_RESET_CRON:0 0 3 * * *}

@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1
 
-# Etapa de compilación. La caché de Maven evita descargar todo en cada build.
+# Etapa de compilación. Las dependencias van en su propia capa: solo se descargan si cambia el pom.
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q -DskipTests package
+RUN mvn -B -q -DskipTests package
 
 # Imagen final: solo el JRE y el jar, con un usuario sin privilegios.
 FROM eclipse-temurin:21-jre

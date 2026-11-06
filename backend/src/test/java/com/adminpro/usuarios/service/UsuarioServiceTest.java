@@ -30,6 +30,7 @@ import com.adminpro.audit.service.AuditService;
 import com.adminpro.auth.service.RefreshTokenService;
 import com.adminpro.exception.ApiException;
 import com.adminpro.exception.TipoError;
+import com.adminpro.security.ModoDemo;
 import com.adminpro.usuarios.dto.RestablecerPasswordRequest;
 import com.adminpro.usuarios.dto.UsuarioCreateRequest;
 import com.adminpro.usuarios.dto.UsuarioUpdateRequest;
@@ -67,7 +68,7 @@ class UsuarioServiceTest {
     @BeforeEach
     void configurar() {
         servicio = new UsuarioService(usuarios, roles, empleados, codificador, refreshTokens, auditoria,
-                new UsuarioMapperImpl());
+                new UsuarioMapperImpl(), new ModoDemo(false));
         administrador = rol(Rol.ADMINISTRADOR, 10L);
         auxiliar = rol("AUXILIAR", 20L);
 

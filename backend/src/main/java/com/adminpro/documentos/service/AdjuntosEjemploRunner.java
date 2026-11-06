@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.adminpro.documentos.repository.DocumentoAdjuntoRepository;
@@ -40,6 +41,7 @@ public class AdjuntosEjemploRunner implements ApplicationRunner {
     }
 
     @Override
+    @Order(2) // Después de restaurar los datos del demo.
     public void run(ApplicationArguments argumentos) {
         byte[] contenido = PDF.getBytes(StandardCharsets.US_ASCII);
         adjuntos.findByActivoTrue().stream()
