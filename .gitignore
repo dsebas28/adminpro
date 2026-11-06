@@ -1,0 +1,17 @@
+# Secretos
+.env
+
+# Java
+target/
+
+# Node y Angular
+node_modules/
+dist/
+.angular/
+
+# Editores y sistema
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
