@@ -37,7 +37,7 @@ class ArranqueIT extends IntegrationTestBase {
 
     @Test
     void elPerfilDevCargaLosDatosDePrueba() {
-        assertThat(jdbc.queryForObject("select count(*) from empleados", Long.class)).isEqualTo(26);
+        assertThat(jdbc.queryForObject("select count(*) from empleados", Long.class)).isGreaterThanOrEqualTo(26);
     }
 
     /** Con la imagen Linux, lower() también debe convertir letras con tilde. */

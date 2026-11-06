@@ -70,6 +70,18 @@ public class AuditoriaConsultaService {
         return PageResponse.of(pagina, a -> aRespuesta(a, autores));
     }
 
+    /** Historial de un registro para quien lo puede leer, sin datos técnicos como la IP. */
+    public PageResponse<AuditoriaResponse> historialDe(String entidad, Long entidadId, Pageable paginacion) {
+        Consultas.validarOrden(paginacion, ORDEN_PERMITIDO);
+        Specification<Auditoria> filtro = (raiz, consulta, cb) -> cb.and(
+                cb.equal(raiz.get("entidad"), entidad), cb.equal(raiz.get("entidadId"), entidadId));
+        Page<Auditoria> pagina = repositorio.findAll(filtro, paginacion);
+        Map<Long, RefResponse> autores = autoresDe(pagina.getContent());
+        return PageResponse.of(pagina, a -> new AuditoriaResponse(a.getId(), a.getEntidad(), a.getEntidadId(),
+                a.getAccion(), a.getValorAnterior(), a.getValorNuevo(), autores.get(a.getCreatedBy()), null,
+                a.getCreatedAt()));
+    }
+
     public AuditoriaResponse obtener(Long id) {
         Auditoria auditoria = repositorio.findById(id)
                 .orElseThrow(() -> ApiException.noEncontrado("El registro de auditoría no existe"));

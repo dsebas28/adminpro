@@ -23,7 +23,8 @@ import com.adminpro.usuarios.repository.UsuarioRepository;
  */
 @SpringBootTest(properties = {
         "JWT_SECRET=secreto-solo-para-pruebas-de-integracion-0123456789",
-        "COOKIE_SECURE=false"
+        "COOKIE_SECURE=false",
+        "ADJUNTOS_DIR=${java.io.tmpdir}/adminpro-pruebas"
 })
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")

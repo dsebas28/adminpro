@@ -59,6 +59,10 @@ adminpro:
     max-intentos: 5
     bloqueo: 15m
     login-por-minuto: 10
+  adjuntos:
+    dir: ${ADJUNTOS_DIR:/data/adjuntos}
+  documentos:
+    dias-por-vencer: ${DIAS_POR_VENCER:30}
   admin-inicial:
     correo: ${ADMIN_INICIAL_CORREO:}
     password: ${ADMIN_INICIAL_PASSWORD:}

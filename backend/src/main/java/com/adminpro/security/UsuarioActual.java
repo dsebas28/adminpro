@@ -20,6 +20,12 @@ public final class UsuarioActual {
         return Optional.empty();
     }
 
+    public static boolean tiene(String permiso) {
+        Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+        return autenticacion != null && autenticacion.getAuthorities().stream()
+                .anyMatch(autoridad -> permiso.equals(autoridad.getAuthority()));
+    }
+
     public static Long id() {
         return idOpcional().orElseThrow(() -> new IllegalStateException("No hay usuario autenticado"));
     }

@@ -42,5 +42,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>, JpaSpec
 
     boolean existsByEmpleado_Id(Long empleadoId);
 
+    @EntityGraph(attributePaths = "rol")
+    Optional<Usuario> findByEmpleado_Id(Long empleadoId);
+
     long countByRol_CodigoAndActivoTrue(String codigoRol);
 }

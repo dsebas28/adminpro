@@ -19,6 +19,8 @@ public enum TipoError {
             "No tienes permiso para realizar esta acción."),
     CAMBIO_PASSWORD_REQUERIDO(HttpStatus.FORBIDDEN, "cambio-password-requerido", "Cambio de contraseña requerido",
             "Debes cambiar tu contraseña antes de continuar."),
+    SEPARACION_FUNCIONES(HttpStatus.FORBIDDEN, "separacion-funciones", "Aprobación no permitida",
+            "Quien registró un documento no puede aprobarlo. Debe hacerlo otra persona."),
     NO_ENCONTRADO(HttpStatus.NOT_FOUND, "no-encontrado", "Recurso no encontrado",
             "El recurso solicitado no existe."),
     METODO_NO_PERMITIDO(HttpStatus.METHOD_NOT_ALLOWED, "metodo-no-permitido", "Método no permitido",

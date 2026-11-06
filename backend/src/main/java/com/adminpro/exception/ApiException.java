@@ -26,6 +26,12 @@ public class ApiException extends RuntimeException {
         return new ApiException(TipoError.CONFLICTO, mensaje);
     }
 
+    /** Un duplicado es un conflicto (409), pero el formulario necesita saber en qué campo. */
+    public static ApiException conflictoEn(String campo, String mensaje) {
+        return new ApiException(TipoError.CONFLICTO, TipoError.CONFLICTO.detalle(),
+                List.of(new ErrorCampo(campo, mensaje)));
+    }
+
     public static ApiException de(TipoError tipo) {
         return new ApiException(tipo, tipo.detalle());
     }

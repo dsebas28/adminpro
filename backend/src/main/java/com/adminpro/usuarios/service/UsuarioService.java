@@ -162,6 +162,21 @@ public class UsuarioService {
         return mapper.aRespuesta(usuario);
     }
 
+    /** Un empleado que se va pierde el acceso. No aplica sobre uno mismo ni sobre el último Administrador. */
+    @Transactional
+    public void desactivarDeEmpleado(Long empleadoId) {
+        usuarios.findByEmpleado_Id(empleadoId).filter(Usuario::isActivo).ifPresent(usuario -> {
+            if (usuario.getId().equals(UsuarioActual.id())) {
+                throw ApiException.conflicto("No puedes desactivar al empleado vinculado a tu propio usuario");
+            }
+            exigirOtroAdministrador(usuario);
+            Map<String, Object> anterior = foto(usuario);
+            usuario.desactivar();
+            refreshTokens.revocarTodas(usuario.getId());
+            auditoria.registrar(ENTIDAD, usuario.getId(), AccionAuditoria.DESACTIVAR, anterior, foto(usuario));
+        });
+    }
+
     /** Sin un Administrador activo nadie podría gestionar usuarios desde la aplicación. */
     private void exigirOtroAdministrador(Usuario usuario) {
         boolean esAdministradorActivo = usuario.isActivo() && usuario.getRol().getCodigo().equals(Rol.ADMINISTRADOR);

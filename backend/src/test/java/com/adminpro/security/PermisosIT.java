@@ -2,6 +2,7 @@ package com.adminpro.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,7 +19,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 
 import com.adminpro.support.IntegrationTestBase;
 import com.jayway.jsonpath.JsonPath;
@@ -35,11 +37,61 @@ class PermisosIT extends IntegrationTestBase {
     private static final String X = AUXILIAR;
     private static final String C = CONSULTA;
     private static final Set<String> ROLES = Set.of(A, S, X, C);
+    private static final Set<String> TODOS = ROLES;
+    private static final Set<String> SOLO_ADMIN = Set.of(A);
+    private static final Set<String> OPERAN = Set.of(A, S, X);
+    private static final Set<String> APRUEBAN = Set.of(A, S);
 
     private record Ruta(HttpMethod metodo, String ruta, Set<String> permitidos) {
     }
 
     private static final List<Ruta> RUTAS = List.of(
+            new Ruta(HttpMethod.GET, "/api/v1/departamentos", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/departamentos/999999", TODOS),
+            new Ruta(HttpMethod.POST, "/api/v1/departamentos", SOLO_ADMIN),
+            new Ruta(HttpMethod.PUT, "/api/v1/departamentos/999999", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/departamentos/999999/activar", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/departamentos/999999/desactivar", SOLO_ADMIN),
+            new Ruta(HttpMethod.GET, "/api/v1/cargos", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/cargos/999999", TODOS),
+            new Ruta(HttpMethod.POST, "/api/v1/cargos", SOLO_ADMIN),
+            new Ruta(HttpMethod.PUT, "/api/v1/cargos/999999", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/cargos/999999/activar", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/cargos/999999/desactivar", SOLO_ADMIN),
+            new Ruta(HttpMethod.GET, "/api/v1/categorias-documento", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/categorias-documento/999999", TODOS),
+            new Ruta(HttpMethod.POST, "/api/v1/categorias-documento", SOLO_ADMIN),
+            new Ruta(HttpMethod.PUT, "/api/v1/categorias-documento/999999", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/categorias-documento/999999/activar", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/categorias-documento/999999/desactivar", SOLO_ADMIN),
+            new Ruta(HttpMethod.GET, "/api/v1/empleados", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/empleados/999999", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/empleados/999999/historial", TODOS),
+            new Ruta(HttpMethod.POST, "/api/v1/empleados", OPERAN),
+            new Ruta(HttpMethod.PUT, "/api/v1/empleados/999999", OPERAN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/empleados/999999/activar", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/empleados/999999/desactivar", SOLO_ADMIN),
+            new Ruta(HttpMethod.GET, "/api/v1/documentos", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/documentos/999999", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/documentos/999999/historial", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/documentos/999999/adjuntos", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/documentos/999999/adjuntos/1/descarga", TODOS),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos", OPERAN),
+            new Ruta(HttpMethod.PUT, "/api/v1/documentos/999999", OPERAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/enviar", OPERAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/adjuntos", OPERAN),
+            new Ruta(HttpMethod.DELETE, "/api/v1/documentos/999999/adjuntos/1", OPERAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/iniciar-revision", APRUEBAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/aprobar", APRUEBAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/devolver", APRUEBAN),
+            new Ruta(HttpMethod.POST, "/api/v1/documentos/999999/finalizar", APRUEBAN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/documentos/999999/activar", SOLO_ADMIN),
+            new Ruta(HttpMethod.PATCH, "/api/v1/documentos/999999/desactivar", SOLO_ADMIN),
+            new Ruta(HttpMethod.GET, "/api/v1/dashboard/resumen", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/dashboard/documentos-por-estado", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/dashboard/documentos-por-vencer", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/dashboard/actividad-reciente", TODOS),
+            new Ruta(HttpMethod.GET, "/api/v1/dashboard/alertas", TODOS),
             new Ruta(HttpMethod.GET, "/api/v1/auth/me", Set.of(A, S, X, C)),
             new Ruta(HttpMethod.POST, "/api/v1/auth/cambiar-password", Set.of(A, S, X, C)),
             new Ruta(HttpMethod.GET, "/api/v1/usuarios", Set.of(A)),
@@ -116,7 +168,10 @@ class PermisosIT extends IntegrationTestBase {
         }
     }
 
-    private MockHttpServletRequestBuilder peticion(Ruta ruta) {
+    private AbstractMockHttpServletRequestBuilder<?> peticion(Ruta ruta) {
+        if (ruta.metodo() == HttpMethod.POST && ruta.ruta().endsWith("/adjuntos")) {
+            return multipart(ruta.ruta()).file(new MockMultipartFile("archivo", "a.pdf", "application/pdf", new byte[] {1}));
+        }
         var peticion = request(ruta.metodo(), ruta.ruta());
         if (ruta.metodo() == HttpMethod.POST || ruta.metodo() == HttpMethod.PUT) {
             peticion.contentType(MediaType.APPLICATION_JSON).content("{}");
